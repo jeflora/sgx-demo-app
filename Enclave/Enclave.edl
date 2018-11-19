@@ -1,0 +1,16 @@
+enclave {
+    
+    trusted {
+        /* define ECALLs here. */
+        public void start_game(void);
+        public int send_number(int number);
+        public int send_numbers([in, size=n_numbers] int* numbers, int n_numbers);
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+        void print_string([in, string] const char* str);
+        void print_num(int num);
+    };
+
+};
