@@ -1,0 +1,13 @@
+enclave {
+    
+    trusted {
+        /* define ECALLs here. */
+        public void store_try([in, count=ciph_size] uint8_t* sealed_data, uint32_t ciph_size);
+        public int get_stats(void);
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+        void print_string([in] const char* str);
+    };
+};

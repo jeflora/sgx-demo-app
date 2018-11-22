@@ -11,6 +11,6 @@ enclave {
         /* define OCALLs here. */
         void print_string([in, string] const char* str);
         void print_num(int num);
+        void send_data_to_stats_manager([in, count=ciph_size] uint8_t* sealed, uint32_t ciph_size);
     };
-
 };
