@@ -18,6 +18,8 @@
 #define ENCLAVE_FILENAME "enclave.signed.so"
 #define SEALED_DATA_FILENAME "../data/sealed_data.dat"
 
+#define HIST_DATA_FILENAME "../data/historic_data.dat"
+
 #define MAX_SIZE 1024
 #define PORT 5300 
 
@@ -30,10 +32,32 @@ void print_string(const char* str) {
     printf("%s\n", str);
 }
 
+void write_sealed_data_to_file(uint8_t* data_sealed, uint32_t ciph_size) {
+    /* Adapted from: https://software.intel.com/en-us/forums/intel-software-guard-extensions-intel-sgx/topic/740798 */ 
+    std::vector<uint8_t>sealed(data_sealed, data_sealed + ciph_size);
+
+    std::ofstream output(HIST_DATA_FILENAME, std::ios::binary);
+
+    std::copy( 
+        sealed.begin(), 
+        sealed.end(),
+        std::ostreambuf_iterator<char>(output));
+    output.close();
+}
+
+
 //=============================
 
 void print_message(const std::string error) {
     std::cout << "[  App  ] " << error << std::endl;
+}
+
+void store_sealed_data() {
+    sgx_status_t status = close_and_store(global_eid);
+    if (status != SGX_SUCCESS) {
+        print_message("ECALL failed");
+        return;
+    }
 }
 
 int server_fd;
@@ -41,8 +65,10 @@ int server_fd;
 void cleanup(int sig) {
 	close(server_fd);
 
+        store_sealed_data();
+
 	/* Destroy the enclave */
-    sgx_destroy_enclave(global_eid);
+        sgx_destroy_enclave(global_eid);
 
 	exit(0);
 }
@@ -51,11 +77,13 @@ void establish_communication(int);
 
 int main(int argc, char *argv[]) {
     int client_socket, return_value; 
-	struct sockaddr_in address; 
-	int opt = 1; 
-	int addrlen = sizeof(address); 
+    struct sockaddr_in address; 
+    int opt = 1; 
+    int addrlen = sizeof(address); 
 
-	sgx_launch_token_t token = {0};
+    signal(SIGINT, cleanup);
+
+    sgx_launch_token_t token = {0};
     sgx_status_t ret = SGX_ERROR_UNEXPECTED;
     int updated = 0;
 
@@ -171,10 +199,10 @@ void establish_communication(int client_socket) {
 	uint8_t* sealed = read_sealed_data(ciph_size);
 
 	sgx_status_t status = store_try(global_eid, sealed, ciph_size);
-    if (status != SGX_SUCCESS) {
-        print_message("ECALL failed");
-        return;
-    }
+        if (status != SGX_SUCCESS) {
+            print_message("ECALL failed");
+            return;
+        }
 
 	send(client_socket , done , strlen(done) , 0 ); 
 	print_message("-- Message sent --");

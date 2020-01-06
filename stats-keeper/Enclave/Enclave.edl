@@ -4,10 +4,12 @@ enclave {
         /* define ECALLs here. */
         public void store_try([in, count=ciph_size] uint8_t* sealed_data, uint32_t ciph_size);
         public int get_stats(void);
+        public void close_and_store(void);
     };
 
     untrusted {
         /* define OCALLs here. */
         void print_string([in] const char* str);
+        void write_sealed_data_to_file([in, count=ciph_size] uint8_t* sealed, uint32_t ciph_size);
     };
 };
