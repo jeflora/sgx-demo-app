@@ -75,5 +75,5 @@ $ ./app.out
 
 ## Authors
 
-* **José Flora**   - <jeflora@student.dei.uc.pt>
+* **José Flora**   - <jeflora@dei.uc.pt>
 * **Nuno Antunes** - <nmsa@dei.uc.pt>
